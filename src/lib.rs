@@ -1,8 +1,9 @@
+#[allow(dead_code, unused)]
 mod smart_home {
     use std::collections::HashMap;
     use crate::smart_room::Room;
 
-    struct Home {
+    pub struct Home {
         name: String,
         rooms: HashMap<String, Room>,
     }
@@ -30,10 +31,11 @@ mod smart_home {
     }
 }
 
+#[allow(dead_code, unused)]
 mod smart_room {
     use std::{rc::Rc, collections::HashMap};
 
-    struct Room {
+    pub struct Room {
         unique_name: String,
         devices: HashMap<String, Rc<dyn Device>>,
     }
@@ -56,7 +58,7 @@ mod smart_room {
         }
     }
 
-    trait Device {
+    pub trait Device {
         fn description(&self) -> String;
     }
 }

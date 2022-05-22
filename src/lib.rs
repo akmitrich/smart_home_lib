@@ -1,7 +1,7 @@
 #[allow(dead_code, unused)]
 mod smart_home {
-    use std::collections::HashMap;
     use crate::smart_room::Room;
+    use std::collections::HashMap;
 
     pub struct Home {
         name: String,
@@ -10,7 +10,10 @@ mod smart_home {
 
     impl<'a> Home {
         pub fn new(name: &str) -> Self {
-            Home { name: String::from(name), rooms: HashMap::new() }
+            Home {
+                name: String::from(name),
+                rooms: HashMap::new(),
+            }
         }
 
         pub fn room_list(&self) -> Vec<&'a Room> {
@@ -21,7 +24,8 @@ mod smart_home {
             todo!()
         }
 
-        pub fn remove_room(&mut self, unique_name: &str) /*-> Room ?*/ {
+        pub fn remove_room(&mut self, unique_name: &str) /*-> Room ?*/
+        {
             todo!()
         }
 
@@ -33,7 +37,7 @@ mod smart_home {
 
 #[allow(dead_code, unused)]
 mod smart_room {
-    use std::{rc::Rc, collections::HashMap};
+    use std::{collections::HashMap, rc::Rc};
 
     pub struct Room {
         unique_name: String,
@@ -42,7 +46,10 @@ mod smart_room {
 
     impl Room {
         pub fn new(unique_name: &str) -> Self {
-            Room { unique_name: String::from(unique_name), devices: HashMap::new() }
+            Room {
+                unique_name: String::from(unique_name),
+                devices: HashMap::new(),
+            }
         }
 
         pub fn device_list(&self) -> Vec<Rc<dyn Device>> {
@@ -53,7 +60,8 @@ mod smart_room {
             todo!()
         }
 
-        pub fn remove_device(&mut self, unique_name: &str) /* -> Rc<dyn Device> ?*/ {
+        pub fn remove_device(&mut self, unique_name: &str) /* -> Rc<dyn Device> ?*/
+        {
             todo!()
         }
     }
@@ -64,6 +72,4 @@ mod smart_room {
 }
 
 #[cfg(test)]
-mod tests {
-    
-}
+mod tests {}

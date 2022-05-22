@@ -7,16 +7,16 @@ mod smart_home {
         rooms: HashMap<String, Room>,
     }
 
-    impl Home {
+    impl<'a> Home {
         pub fn new(name: &str) -> Self {
-            Home { name, rooms: HashMap::new() }
+            Home { name: String::from(name), rooms: HashMap::new() }
         }
 
-        pub fn room_list(&'a self) -> Vec<&'a Room> {
+        pub fn room_list(&self) -> Vec<&'a Room> {
             todo!()
         }
 
-        pub fn add_room(&mut self, room: Room, unique_name: &str) {
+        pub fn add_room(&mut self, room: Room) {
             todo!()
         }
 
@@ -40,7 +40,7 @@ mod smart_room {
 
     impl Room {
         pub fn new(unique_name: &str) -> Self {
-            Room { unique_name, devices: HashMap::new() }
+            Room { unique_name: String::from(unique_name), devices: HashMap::new() }
         }
 
         pub fn device_list(&self) -> Vec<Rc<dyn Device>> {

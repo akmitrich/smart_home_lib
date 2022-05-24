@@ -67,7 +67,7 @@ mod smart_room {
     }
 
     pub trait Device {
-        fn description(&self) -> String;
+        fn description(&self) -> &str;
     }
 }
 

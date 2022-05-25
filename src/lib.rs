@@ -1,7 +1,7 @@
 #[allow(dead_code, unused)]
 mod smart_home {
     use crate::smart_room::Room;
-    use std::collections::HashMap;
+    use std::collections::{HashMap, hash_map::Values};
 
     pub struct Home {
         name: String,
@@ -16,7 +16,7 @@ mod smart_home {
             }
         }
 
-        pub fn room_list(&self) -> Vec<&'a Room> {
+        pub fn room_list(&self) -> Values<String, Room> {
             todo!()
         }
 
@@ -24,7 +24,7 @@ mod smart_home {
             todo!()
         }
 
-        pub fn remove_room(&mut self, unique_name: &str) /*-> Room ?*/
+        pub fn remove_room(&mut self, unique_name: &str) -> Option<Room>
         {
             todo!()
         }
@@ -37,11 +37,12 @@ mod smart_home {
 
 #[allow(dead_code, unused)]
 mod smart_room {
-    use std::{collections::HashMap, rc::Rc};
+    use std::collections::{HashMap, hash_map::Values};
+    use crate::smart_device::Device;
 
     pub struct Room {
         unique_name: String,
-        devices: HashMap<String, Rc<dyn Device>>,
+        devices: HashMap<String, Device>,
     }
 
     impl Room {
@@ -52,22 +53,33 @@ mod smart_room {
             }
         }
 
-        pub fn device_list(&self) -> Vec<Rc<dyn Device>> {
+        pub fn device_list(&self) -> Values<String, Device> {
             todo!()
         }
 
-        pub fn add_device(&mut self, device: &dyn Device, unique_name: &str) {
+        pub fn add_device(&mut self, device: Device, unique_name: &str) {
             todo!()
         }
 
-        pub fn remove_device(&mut self, unique_name: &str) /* -> Rc<dyn Device> ?*/
+        pub fn remove_device(&mut self, unique_name: &str) -> Option<Device>
         {
             todo!()
         }
     }
+}
 
-    pub trait Device {
-        fn description(&self) -> &str;
+#[allow(unused, dead_code)]
+mod smart_device {
+    pub enum Device {
+        Unknown,
+    }
+
+    impl Device {
+        pub fn description(&self) -> String {
+            match self {
+                Device::Unknown => String::from("Unknown device."),
+            }
+        }
     }
 }
 

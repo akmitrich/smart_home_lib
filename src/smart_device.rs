@@ -5,7 +5,7 @@ pub enum Device {
 }
 
 impl Device {
-    pub fn description(&self) -> String {
+    pub fn report_state(&self) -> String {
         match self {
             Device::Unknown => String::from("Unknown device."),
         }

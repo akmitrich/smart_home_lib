@@ -1,5 +1,7 @@
+use std::collections::{HashMap, hash_map::{Keys, Values}};
 use crate::smart_room::Room;
-use std::collections::{HashMap, hash_map::Values};
+use crate::smart_device::Device;
+use crate::FetchResult;
 
 #[allow(dead_code, unused)]
 pub struct Home {
@@ -20,12 +22,36 @@ impl Home {
         todo!()
     }
 
-    pub fn add_room(&mut self, room: Room) {
+    pub fn room_names_list(&self) -> Keys<String, Room> {
         todo!()
     }
 
-    pub fn remove_room(&mut self, unique_name: &str) -> Option<Room>
+    pub fn add_room(&mut self, unique_name: &str) -> Option<Room> {
+        todo!()
+    }
+
+    pub fn remove_room(&mut self, room_name: &str) -> Option<Room>
     {
+        todo!()
+    }
+
+    pub fn get_room_by_name(&self, room_name: &str) -> Option<Room> {
+        todo!()
+    }
+
+    pub fn device_names_list(&self) -> Vec<&str> {
+        todo!()
+    }
+
+    pub fn add_device(&mut self, room_name: &str, unique_name: &str, device: Device) -> Option<Device> {
+        todo!()
+    }
+
+    pub fn remove_device(&mut self, room_name: &str, device_name: &str) -> Option<Device> {
+        todo!()
+    }
+
+    pub fn get_device_by_path(&self, room_name: &str, device_name: &str) -> Option<Device> {
         todo!()
     }
 

@@ -85,7 +85,7 @@ mod tests {
         assert!(home.add_room("R1").is_some());
         assert!(home.add_room("R2").is_some());
         assert!(home.add_room("R1").is_none());
-    } 
+    }
 
     #[test]
     fn test_room_list() {
@@ -121,16 +121,37 @@ mod tests {
         assert!(home.add_room("R2").is_some());
         assert!(home.add_device("R1", "S1", Device::new_socket()).is_some());
         assert!(home.add_device("R1", "S2", Device::new_socket()).is_some());
-        assert!(home.add_device("R1", "T", Device::new_thermometer()).is_some());
-        assert!(home.add_device("R1", "S1", Device::new_thermometer()).is_none());
+        assert!(home
+            .add_device("R1", "T", Device::new_thermometer())
+            .is_some());
+        assert!(home
+            .add_device("R1", "S1", Device::new_thermometer())
+            .is_none());
         assert!(home.add_device("R2", "S1", Device::new_socket()).is_some());
-        assert!(home.add_device("R2", "T1", Device::new_thermometer()).is_some());
+        assert!(home
+            .add_device("R2", "T1", Device::new_thermometer())
+            .is_some());
         assert!(home.add_device("R2", "T1", Device::new_socket()).is_none());
-        assert_eq!(&Device::new_socket(), home.get_device_by_path("R1", "S1").unwrap());
-        assert_eq!(&Device::new_socket(), home.get_device_by_path("R1", "S2").unwrap());
-        assert_eq!(&Device::new_thermometer(), home.get_device_by_path("R1", "T").unwrap());
-        assert_eq!(&Device::new_socket(), home.get_device_by_path("R2", "S1").unwrap());
-        assert_eq!(&Device::new_thermometer(), home.get_device_by_path("R1", "T1").unwrap());
+        assert_eq!(
+            &Device::new_socket(),
+            home.get_device_by_path("R1", "S1").unwrap()
+        );
+        assert_eq!(
+            &Device::new_socket(),
+            home.get_device_by_path("R1", "S2").unwrap()
+        );
+        assert_eq!(
+            &Device::new_thermometer(),
+            home.get_device_by_path("R1", "T").unwrap()
+        );
+        assert_eq!(
+            &Device::new_socket(),
+            home.get_device_by_path("R2", "S1").unwrap()
+        );
+        assert_eq!(
+            &Device::new_thermometer(),
+            home.get_device_by_path("R1", "T1").unwrap()
+        );
         assert!(home.get_device_by_path("R1", "No device").is_none());
         assert!(home.get_device_by_path("R2", "T").is_none());
     }
@@ -142,11 +163,17 @@ mod tests {
         assert!(home.add_room("R2").is_some());
         assert!(home.add_device("R1", "S1", Device::new_socket()).is_some());
         assert!(home.add_device("R1", "S2", Device::new_socket()).is_some());
-        assert!(home.add_device("R1", "T", Device::new_thermometer()).is_some());
-        assert!(home.add_device("R1", "S1", Device::new_thermometer()).is_none());
+        assert!(home
+            .add_device("R1", "T", Device::new_thermometer())
+            .is_some());
+        assert!(home
+            .add_device("R1", "S1", Device::new_thermometer())
+            .is_none());
         assert_eq!(3, home.device_names_list("R1").len());
         assert!(home.add_device("R2", "S1", Device::new_socket()).is_some());
-        assert!(home.add_device("R2", "T1", Device::new_thermometer()).is_some());
+        assert!(home
+            .add_device("R2", "T1", Device::new_thermometer())
+            .is_some());
         assert_eq!(2, home.device_names_list("R2").len());
         assert!(home.remove_device("R1", "No device").is_none());
         assert!(home.remove_device("R1", "S1").is_some());
@@ -155,7 +182,7 @@ mod tests {
         assert!(home.remove_device("R1", "T").is_some());
         assert!(home.device_names_list("R1").is_empty());
         assert!(home.remove_device("R2", "S1").is_some());
-        assert!(home.remove_device("R2", "T1").is_some());       
+        assert!(home.remove_device("R2", "T1").is_some());
         assert!(home.device_names_list("R2").is_empty());
     }
- }
+}

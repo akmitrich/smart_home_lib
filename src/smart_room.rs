@@ -5,7 +5,6 @@ use std::collections::{
 };
 
 #[allow(dead_code, unused)]
-
 #[derive(Debug, PartialEq)]
 pub struct Room {
     devices: HashMap<String, Device>,
@@ -59,9 +58,18 @@ mod tests {
         assert!(room.add_device("S1", Device::new_thermometer()).is_none());
         assert_eq!(3, room.device_names_list().collect::<Vec<&String>>().len());
         assert_eq!(3, room.device_list().collect::<Vec<&Device>>().len());
-        assert_eq!(&Device::new_socket(), room.get_device_by_name("S1").unwrap());
-        assert_eq!(&Device::new_socket(), room.get_device_by_name("S2").unwrap());
-        assert_eq!(&Device::new_thermometer(), room.get_device_by_name("T").unwrap());
+        assert_eq!(
+            &Device::new_socket(),
+            room.get_device_by_name("S1").unwrap()
+        );
+        assert_eq!(
+            &Device::new_socket(),
+            room.get_device_by_name("S2").unwrap()
+        );
+        assert_eq!(
+            &Device::new_thermometer(),
+            room.get_device_by_name("T").unwrap()
+        );
         assert!(room.get_device_by_name("No device").is_none());
     }
 
@@ -77,7 +85,10 @@ mod tests {
         assert!(room.remove_device("S2").is_some());
         assert!(room.remove_device("T").is_some());
         assert!(room.remove_device("No device").is_none());
-        assert!(room.device_names_list().collect::<Vec<&String>>().is_empty());
+        assert!(room
+            .device_names_list()
+            .collect::<Vec<&String>>()
+            .is_empty());
         assert!(room.device_list().collect::<Vec<&Device>>().is_empty())
     }
 }

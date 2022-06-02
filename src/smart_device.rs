@@ -121,9 +121,7 @@ mod tests {
             assert_eq!(0_f64, socket.current);
             assert!(!socket.is_on());
             assert_eq!(0_f64, socket.get_current_power());
-            let socket = socket.voltage(225_f64)
-            .current(3_f64)
-            .switch(true);
+            let socket = socket.voltage(225_f64).current(3_f64).switch(true);
             assert_eq!(225_f64, socket.voltage);
             assert_eq!(3_f64, socket.current);
             assert!(socket.is_on());

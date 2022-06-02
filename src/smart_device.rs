@@ -1,32 +1,45 @@
-
 #![allow(unused, dead_code)]
 
 use std::fmt::format;
+
+#[derive(Debug, PartialEq)]
+#[non_exhaustive]
 pub enum Device {
-    Unknown,
     Socket(Socket),
     Thermometer(Thermometer),
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Socket {
     voltage: f64,
     current: f64,
     on: bool,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Thermometer {
-    temperature: f64
+    temperature: f64,
 }
 
-trait ReportState {
+pub trait ReportState {
     fn report_state(&self) -> String;
+}
+
+impl Device {
+    pub fn new_socket() -> Self {
+        Device::Socket(Socket::new(220_f64, 0_f64))
+    }
+
+    pub fn new_thermometer() -> Self {
+        Device::Thermometer(Thermometer::new(20_f64))
+    }
 }
 
 impl ReportState for Device {
     fn report_state(&self) -> String {
         match self {
             Device::Socket(s) => format!("Socket {}", s.report_state()),
-            Device::Thermometer(t) => format!("Thermometer, {}",t.report_state()),
+            Device::Thermometer(t) => format!("Thermometer, {}", t.report_state()),
             _ => String::from("Unknown device."),
         }
     }
@@ -34,7 +47,11 @@ impl ReportState for Device {
 
 impl Socket {
     pub fn new(voltage: f64, current: f64) -> Self {
-        Self { voltage, current, on: false }
+        Self {
+            voltage,
+            current,
+            on: false,
+        }
     }
 
     pub fn voltage(mut self, voltage: f64) -> Self {
@@ -63,7 +80,11 @@ impl Socket {
 
 impl ReportState for Socket {
     fn report_state(&self) -> String {
-        format!(" is {}; current power is {}", if self.is_on() {"on"} else {"off"}, self.get_current_power())
+        format!(
+            " is {}; current power is {}",
+            if self.is_on() { "on" } else { "off" },
+            self.get_current_power()
+        )
     }
 }
 

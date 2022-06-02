@@ -1,7 +1,12 @@
-use std::collections::{HashMap, hash_map::{Keys, Values}};
 use crate::smart_device::Device;
+use std::collections::{
+    hash_map::{Keys, Values},
+    HashMap,
+};
 
 #[allow(dead_code, unused)]
+
+#[derive(Debug, PartialEq)]
 pub struct Room {
     devices: HashMap<String, Device>,
 }
@@ -26,8 +31,7 @@ impl Room {
         todo!()
     }
 
-    pub fn remove_device(&mut self, unique_name: &str) -> Option<Device>
-    {
+    pub fn remove_device(&mut self, unique_name: &str) -> Option<Device> {
         todo!()
     }
 

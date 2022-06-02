@@ -108,3 +108,40 @@ impl ReportState for Thermometer {
         format!(" temperature is {}", self.get_temperature())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_socket() {
+        let device = Device::new_socket();
+        if let Device::Socket(mut socket) = device {
+            assert_eq!(220_f64, socket.voltage);
+            assert_eq!(0_f64, socket.current);
+            assert!(!socket.is_on());
+            assert_eq!(0_f64, socket.get_current_power());
+            let socket = socket.voltage(225_f64)
+            .current(3_f64)
+            .switch(true);
+            assert_eq!(225_f64, socket.voltage);
+            assert_eq!(3_f64, socket.current);
+            assert!(socket.is_on());
+            assert!((socket.get_current_power() - 775_f64).abs() < 1e-6);
+        } else {
+            panic!("Device::new_socket gives unexpected result.");
+        }
+    }
+
+    #[test]
+    fn test_thermometer() {
+        let device = Device::new_thermometer();
+        if let Device::Thermometer(mut thermometer) = device {
+            assert_eq!(20_f64, thermometer.temperature);
+            let thermometer = thermometer.temperature(25_f64);
+            assert_eq!(25_f64, thermometer.temperature);
+        } else {
+            panic!("Device::new_thermometer gives unexpected result.");
+        }
+    }
+}

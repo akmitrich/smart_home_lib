@@ -39,3 +39,45 @@ impl Room {
         todo!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_room() {
+        let room = Room::new();
+        assert!(room.devices.is_empty());
+    }
+
+    #[test]
+    fn test_add_get_device() {
+        let mut room = Room::new();
+        assert!(room.add_device("S1", Device::new_socket()).is_some());
+        assert!(room.add_device("S2", Device::new_socket()).is_some());
+        assert!(room.add_device("T", Device::new_thermometer()).is_some());
+        assert!(room.add_device("S1", Device::new_thermometer()).is_none());
+        assert_eq!(3, room.device_names_list().collect::<Vec<&String>>().len());
+        assert_eq!(3, room.device_list().collect::<Vec<&Device>>().len());
+        assert_eq!(&Device::new_socket(), room.get_device_by_name("S1").unwrap());
+        assert_eq!(&Device::new_socket(), room.get_device_by_name("S2").unwrap());
+        assert_eq!(&Device::new_thermometer(), room.get_device_by_name("T").unwrap());
+        assert!(room.get_device_by_name("No device").is_none());
+    }
+
+    #[test]
+    fn test_remove_device() {
+        let mut room = Room::new();
+        assert!(room.add_device("S1", Device::new_socket()).is_some());
+        assert!(room.add_device("S2", Device::new_socket()).is_some());
+        assert!(room.add_device("T", Device::new_thermometer()).is_some());
+        assert_eq!(3, room.device_names_list().collect::<Vec<&String>>().len());
+        assert_eq!(3, room.device_list().collect::<Vec<&Device>>().len());
+        assert!(room.remove_device("S1").is_some());
+        assert!(room.remove_device("S2").is_some());
+        assert!(room.remove_device("T").is_some());
+        assert!(room.remove_device("No device").is_none());
+        assert!(room.device_names_list().collect::<Vec<&String>>().is_empty());
+        assert!(room.device_list().collect::<Vec<&Device>>().is_empty())
+    }
+}

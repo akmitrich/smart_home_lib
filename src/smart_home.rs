@@ -1,4 +1,4 @@
-use crate::smart_device::Device;
+use crate::smart_device::{Device, ReportState};
 use crate::smart_room::Room;
 use std::collections::{
     hash_map::{Keys, Values},
@@ -45,7 +45,9 @@ impl Home {
     }
 
     pub fn device_names_list(&self, room_name: &str) -> Option<Vec<&String>> {
-        self.rooms.get(room_name).map(|room| room.device_names_list().collect())
+        self.rooms
+            .get(room_name)
+            .map(|room| room.device_names_list().collect())
     }
 
     pub fn add_device(
@@ -54,19 +56,33 @@ impl Home {
         unique_name: &str,
         device: Device,
     ) -> Option<&Device> {
-        self.rooms.get_mut(room_name).and_then(|room| room.add_device(unique_name, device))
+        self.rooms
+            .get_mut(room_name)
+            .and_then(|room| room.add_device(unique_name, device))
     }
 
     pub fn remove_device(&mut self, room_name: &str, device_name: &str) -> Option<Device> {
-        self.rooms.get_mut(room_name).and_then(|room| room.remove_device(device_name))
+        self.rooms
+            .get_mut(room_name)
+            .and_then(|room| room.remove_device(device_name))
     }
 
     pub fn get_device_by_path(&self, room_name: &str, device_name: &str) -> Option<&Device> {
-        self.rooms.get(room_name).and_then(|room| room.get_device_by_name(device_name))
+        self.rooms
+            .get(room_name)
+            .and_then(|room| room.get_device_by_name(device_name))
     }
 
     pub fn report(&self) -> String {
-        todo!()
+        let mut lines = vec![format!("General report about {}:", self.name)];
+        for room_name in self.room_names_list() {
+            lines.push(format!("\tIn room '{}'", room_name));
+            let room = self.get_room_by_name(room_name).unwrap();
+            for device in room.device_list() {
+                lines.push(format!("\t\t{}", device.report_state()));
+            }
+        }
+        lines.join("\n")
     }
 }
 

@@ -90,7 +90,7 @@ impl Socket {
 impl ReportState for Socket {
     fn report_state(&self) -> String {
         format!(
-            " is {}; current power is {}",
+            "is {}; current power is {}",
             if self.is_on() { "on" } else { "off" },
             self.get_current_power()
         )
@@ -136,7 +136,7 @@ mod tests {
             assert_eq!(225_f64, socket.voltage);
             assert_eq!(3_f64, socket.current);
             assert!(socket.is_on());
-            assert!((socket.get_current_power() - 775_f64).abs() < 1e-6);
+            assert!((socket.get_current_power() - 675_f64).abs() < 1e-6);
         } else {
             panic!("Device::new_socket gives unexpected result.");
         }

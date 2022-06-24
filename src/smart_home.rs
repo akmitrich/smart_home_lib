@@ -21,27 +21,35 @@ impl Home {
     }
 
     pub fn room_names_list(&self) -> Keys<String, Room> {
-        todo!()
+        self.rooms.keys()
     }
 
     pub fn room_list(&self) -> Values<String, Room> {
-        todo!()
+        self.rooms.values()
     }
 
     pub fn add_room(&mut self, unique_name: &str) -> Option<&Room> {
-        todo!()
+        if self.rooms.contains_key(unique_name) {
+            return None;
+        }
+        self.rooms.insert(unique_name.into(), Room::new());
+        self.rooms.get(unique_name)
     }
 
     pub fn remove_room(&mut self, room_name: &str) -> Option<Room> {
-        todo!()
+        self.rooms.remove(room_name)
     }
 
     pub fn get_room_by_name(&self, room_name: &str) -> Option<&Room> {
-        todo!()
+        self.rooms.get(room_name)
     }
 
-    pub fn device_names_list(&self, room_name: &str) -> Vec<&str> {
-        todo!()
+    pub fn device_names_list(&self, room_name: &str) -> Option<Vec<&String>> {
+        if let Some(room) = self.rooms.get(room_name) {
+            Some(room.device_names_list().collect())
+        } else {
+            None
+        }
     }
 
     pub fn add_device(
@@ -50,15 +58,23 @@ impl Home {
         unique_name: &str,
         device: Device,
     ) -> Option<&Device> {
-        todo!()
+        if let Some(room) = self.rooms.get_mut(room_name) {
+            room.add_device(unique_name, device)
+        } else {
+            None
+        }
     }
 
     pub fn remove_device(&mut self, room_name: &str, device_name: &str) -> Option<Device> {
-        todo!()
+        match self.rooms.get_mut(room_name) {
+            Some(room) => room.remove_device(device_name),
+            None => None,
+        }
     }
 
     pub fn get_device_by_path(&self, room_name: &str, device_name: &str) -> Option<&Device> {
-        todo!()
+        let result = self.rooms.get(room_name).and_then(|room| room.get_device_by_name(device_name));
+        result
     }
 
     pub fn report(&self) -> String {
@@ -148,10 +164,7 @@ mod tests {
             &Device::new_socket(),
             home.get_device_by_path("R2", "S1").unwrap()
         );
-        assert_eq!(
-            &Device::new_thermometer(),
-            home.get_device_by_path("R1", "T1").unwrap()
-        );
+        assert!(home.get_device_by_path("R1", "T1").is_none());
         assert!(home.get_device_by_path("R1", "No device").is_none());
         assert!(home.get_device_by_path("R2", "T").is_none());
     }
@@ -169,20 +182,20 @@ mod tests {
         assert!(home
             .add_device("R1", "S1", Device::new_thermometer())
             .is_none());
-        assert_eq!(3, home.device_names_list("R1").len());
+        assert_eq!(3, home.device_names_list("R1").unwrap().len());
         assert!(home.add_device("R2", "S1", Device::new_socket()).is_some());
         assert!(home
             .add_device("R2", "T1", Device::new_thermometer())
             .is_some());
-        assert_eq!(2, home.device_names_list("R2").len());
+        assert_eq!(2, home.device_names_list("R2").unwrap().len());
         assert!(home.remove_device("R1", "No device").is_none());
         assert!(home.remove_device("R1", "S1").is_some());
         assert!(home.remove_device("R1", "S2").is_some());
         assert!(home.remove_device("R1", "T1").is_none());
         assert!(home.remove_device("R1", "T").is_some());
-        assert!(home.device_names_list("R1").is_empty());
+        assert!(home.device_names_list("R1").unwrap().is_empty());
         assert!(home.remove_device("R2", "S1").is_some());
         assert!(home.remove_device("R2", "T1").is_some());
-        assert!(home.device_names_list("R2").is_empty());
+        assert!(home.device_names_list("R2").unwrap().is_empty());
     }
 }

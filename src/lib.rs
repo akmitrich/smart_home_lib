@@ -1,8 +1,8 @@
-mod smart_home;
+pub mod smart_home;
 
-mod smart_room;
+pub mod smart_room;
 
-mod smart_device;
+pub mod smart_device;
 
 #[cfg(test)]
 mod tests {}

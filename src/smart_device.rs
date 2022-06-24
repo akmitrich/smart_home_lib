@@ -27,7 +27,7 @@ pub trait ReportState {
 
 impl Device {
     pub fn new_socket() -> Self {
-        Device::Socket(Socket::new(220_f64, 0_f64))
+        Device::Socket(Socket::new(220_f64, 0_f64, false))
     }
 
     pub fn new_thermometer() -> Self {
@@ -45,23 +45,33 @@ impl ReportState for Device {
     }
 }
 
+impl From<Socket> for Device {
+    fn from(s: Socket) -> Self {
+        Device::Socket(s)
+    }
+}
+
+impl From<Thermometer> for Device {
+    fn from(t: Thermometer) -> Self {
+        Device::Thermometer(t)
+    }
+}
+
 impl Socket {
-    pub fn new(voltage: f64, current: f64) -> Self {
+    pub fn new(voltage: f64, current: f64, on: bool) -> Self {
         Self {
             voltage,
             current,
-            on: false,
+            on,
         }
     }
 
-    pub fn voltage(mut self, voltage: f64) -> Self {
+    pub fn set_voltage(&mut self, voltage: f64) {
         self.voltage = voltage;
-        self
     }
 
-    pub fn current(mut self, current: f64) -> Self {
+    pub fn set_current(&mut self, current: f64) {
         self.current = current;
-        self
     }
 
     pub fn get_current_power(&self) -> f64 {
@@ -72,9 +82,8 @@ impl Socket {
         self.on
     }
 
-    pub fn switch(mut self, on: bool) -> Self {
+    pub fn switch(&mut self, on: bool) {
         self.on = on;
-        self
     }
 }
 
@@ -115,13 +124,15 @@ mod tests {
 
     #[test]
     fn test_socket() {
-        let device = Device::new_socket();
+        let mut device = Device::new_socket();
         if let Device::Socket(mut socket) = device {
             assert_eq!(220_f64, socket.voltage);
             assert_eq!(0_f64, socket.current);
             assert!(!socket.is_on());
             assert_eq!(0_f64, socket.get_current_power());
-            let socket = socket.voltage(225_f64).current(3_f64).switch(true);
+            socket.set_voltage(225_f64);
+            socket.set_current(3_f64);
+            socket.switch(true);
             assert_eq!(225_f64, socket.voltage);
             assert_eq!(3_f64, socket.current);
             assert!(socket.is_on());

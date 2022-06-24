@@ -19,23 +19,27 @@ impl Room {
     }
 
     pub fn device_names_list(&self) -> Keys<String, Device> {
-        todo!()
+        self.devices.keys()
     }
 
     pub fn device_list(&self) -> Values<String, Device> {
-        todo!()
+        self.devices.values()
     }
 
     pub fn add_device(&mut self, unique_name: &str, device: Device) -> Option<&Device> {
-        todo!()
+        if self.devices.contains_key(unique_name) {
+            return None;
+        }
+        self.devices.insert(unique_name.into(), device);
+        self.devices.get(unique_name)
     }
 
-    pub fn remove_device(&mut self, unique_name: &str) -> Option<Device> {
-        todo!()
+    pub fn remove_device(&mut self, device_name: &str) -> Option<Device> {
+        self.devices.remove(device_name)
     }
 
     pub fn get_device_by_name(&self, device_name: &str) -> Option<&Device> {
-        todo!()
+        self.devices.get(device_name)
     }
 }
 

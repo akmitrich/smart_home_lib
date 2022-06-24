@@ -45,7 +45,7 @@ impl Home {
     }
 
     pub fn device_names_list(&self, room_name: &str) -> Option<Vec<&String>> {
-        self.rooms.get(room_name).and_then(|room| Some(room.device_names_list().collect()))
+        self.rooms.get(room_name).map(|room| room.device_names_list().collect())
     }
 
     pub fn add_device(

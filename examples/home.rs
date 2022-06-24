@@ -1,6 +1,10 @@
 use smart_home_lib::smart_home;
 use smart_home_lib::smart_device;
 fn main() {
+    average_temperature_in_room();
+}
+
+fn average_temperature_in_room() {
     let mut home = smart_home::Home::new("Home");
     home.add_room("Main");
     home.add_device("Main", "Thermo1",

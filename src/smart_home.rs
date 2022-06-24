@@ -45,11 +45,7 @@ impl Home {
     }
 
     pub fn device_names_list(&self, room_name: &str) -> Option<Vec<&String>> {
-        if let Some(room) = self.rooms.get(room_name) {
-            Some(room.device_names_list().collect())
-        } else {
-            None
-        }
+        self.rooms.get(room_name).and_then(|room| Some(room.device_names_list().collect()))
     }
 
     pub fn add_device(
@@ -58,23 +54,15 @@ impl Home {
         unique_name: &str,
         device: Device,
     ) -> Option<&Device> {
-        if let Some(room) = self.rooms.get_mut(room_name) {
-            room.add_device(unique_name, device)
-        } else {
-            None
-        }
+        self.rooms.get_mut(room_name).and_then(|room| room.add_device(unique_name, device))
     }
 
     pub fn remove_device(&mut self, room_name: &str, device_name: &str) -> Option<Device> {
-        match self.rooms.get_mut(room_name) {
-            Some(room) => room.remove_device(device_name),
-            None => None,
-        }
+        self.rooms.get_mut(room_name).and_then(|room| room.remove_device(device_name))
     }
 
     pub fn get_device_by_path(&self, room_name: &str, device_name: &str) -> Option<&Device> {
-        let result = self.rooms.get(room_name).and_then(|room| room.get_device_by_name(device_name));
-        result
+        self.rooms.get(room_name).and_then(|room| room.get_device_by_name(device_name))
     }
 
     pub fn report(&self) -> String {

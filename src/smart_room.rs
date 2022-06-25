@@ -66,8 +66,8 @@ mod tests {
         assert!(room.add_device("S2", Device::new_socket()).is_some());
         assert!(room.add_device("T", Device::new_thermometer()).is_some());
         assert!(room.add_device("S1", Device::new_thermometer()).is_none());
-        assert_eq!(3, room.device_names_list().collect::<Vec<&String>>().len());
-        assert_eq!(3, room.device_list().collect::<Vec<&Device>>().len());
+        assert_eq!(3, room.device_names_list().count());
+        assert_eq!(3, room.device_list().count());
         assert_eq!(
             &Device::new_socket(),
             room.get_device_by_name("S1").unwrap()
@@ -89,16 +89,13 @@ mod tests {
         assert!(room.add_device("S1", Device::new_socket()).is_some());
         assert!(room.add_device("S2", Device::new_socket()).is_some());
         assert!(room.add_device("T", Device::new_thermometer()).is_some());
-        assert_eq!(3, room.device_names_list().collect::<Vec<&String>>().len());
-        assert_eq!(3, room.device_list().collect::<Vec<&Device>>().len());
+        assert_eq!(3, room.device_names_list().count());
+        assert_eq!(3, room.device_list().count());
         assert!(room.remove_device("S1").is_some());
         assert!(room.remove_device("S2").is_some());
         assert!(room.remove_device("T").is_some());
         assert!(room.remove_device("No device").is_none());
-        assert!(room
-            .device_names_list()
-            .collect::<Vec<&String>>()
-            .is_empty());
-        assert!(room.device_list().collect::<Vec<&Device>>().is_empty())
+        assert!(room.device_names_list().next().is_none());
+        assert!(room.device_list().next().is_none())
     }
 }

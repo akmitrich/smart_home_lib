@@ -93,10 +93,8 @@ mod tests {
     fn test_home() {
         let home = Home::new("Home");
         assert_eq!("Home", home.name);
-        let rooms: Vec<&Room> = home.room_list().collect();
-        assert!(rooms.is_empty());
-        let room_names: Vec<&String> = home.room_names_list().collect();
-        assert!(room_names.is_empty());
+        assert!(home.room_list().next().is_none());
+        assert!(home.room_names_list().next().is_none());
     }
 
     #[test]
@@ -130,8 +128,8 @@ mod tests {
         assert!(home.remove_room("R3").is_none());
         assert!(home.remove_room("R2").is_none());
         assert!(home.remove_room("R1").is_none());
-        assert!(home.room_names_list().collect::<Vec<&String>>().is_empty());
-        assert!(home.room_list().collect::<Vec<&Room>>().is_empty());
+        assert!(home.room_names_list().next().is_none());
+        assert!(home.room_list().next().is_none());
     }
 
     #[test]

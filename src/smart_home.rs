@@ -1,9 +1,6 @@
 use crate::smart_device::{Device, ReportState};
 use crate::smart_room::Room;
-use std::collections::{
-    hash_map::{Keys, Values},
-    HashMap,
-};
+use std::collections::{hash_map::Entry, HashMap};
 
 #[allow(dead_code, unused)]
 pub struct Home {
@@ -20,20 +17,19 @@ impl Home {
         }
     }
 
-    pub fn room_names_list(&self) -> Keys<String, Room> {
+    pub fn room_names_list(&self) -> impl Iterator<Item = &String> {
         self.rooms.keys()
     }
 
-    pub fn room_list(&self) -> Values<String, Room> {
+    pub fn room_list(&self) -> impl Iterator<Item = &Room> {
         self.rooms.values()
     }
 
     pub fn add_room(&mut self, unique_name: &str) -> Option<&Room> {
-        if self.rooms.contains_key(unique_name) {
-            return None;
+        match self.rooms.entry(unique_name.into()) {
+            Entry::Occupied(_) => None,
+            Entry::Vacant(entry) => Some(entry.insert(Default::default())),
         }
-        self.rooms.insert(unique_name.into(), Room::new());
-        self.rooms.get(unique_name)
     }
 
     pub fn remove_room(&mut self, room_name: &str) -> Option<Room> {

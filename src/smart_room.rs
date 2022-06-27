@@ -1,8 +1,5 @@
 use crate::smart_device::Device;
-use std::collections::{
-    hash_map::{Keys, Values},
-    HashMap,
-};
+use std::collections::{hash_map::Entry, HashMap};
 
 #[allow(dead_code, unused)]
 #[derive(Debug, PartialEq)]
@@ -18,20 +15,19 @@ impl Room {
         }
     }
 
-    pub fn device_names_list(&self) -> Keys<String, Device> {
+    pub fn device_names_list(&self) -> impl Iterator<Item = &String> {
         self.devices.keys()
     }
 
-    pub fn device_list(&self) -> Values<String, Device> {
+    pub fn device_list(&self) -> impl Iterator<Item = &Device> {
         self.devices.values()
     }
 
     pub fn add_device(&mut self, unique_name: &str, device: Device) -> Option<&Device> {
-        if self.devices.contains_key(unique_name) {
-            return None;
+        match self.devices.entry(unique_name.into()) {
+            Entry::Occupied(_) => None,
+            Entry::Vacant(entry) => Some(entry.insert(device)),
         }
-        self.devices.insert(unique_name.into(), device);
-        self.devices.get(unique_name)
     }
 
     pub fn remove_device(&mut self, device_name: &str) -> Option<Device> {

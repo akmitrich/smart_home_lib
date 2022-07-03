@@ -1,12 +1,12 @@
-use smart_home_lib::smart_device;
-use smart_home_lib::smart_home;
+use smart_home::smart_device;
+use smart_home::home;
 fn main() {
     average_temperature_in_room();
     report_example()
 }
 
 fn average_temperature_in_room() {
-    let mut home = smart_home::Home::new("Home");
+    let mut home = home::Home::new("Home");
     home.add_room("Main");
     home.add_device(
         "Main",
@@ -36,7 +36,7 @@ fn average_temperature_in_room() {
 }
 
 fn report_example() {
-    let mut home = smart_home::Home::new("Home");
+    let mut home = home::Home::new("Home");
     home.add_room("Main");
     home.add_device(
         "Main",

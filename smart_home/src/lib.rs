@@ -1,4 +1,4 @@
-pub mod smart_home;
+pub mod home;
 
 pub mod smart_room;
 

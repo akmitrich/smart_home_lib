@@ -7,7 +7,7 @@ use std::{
 
 use smart_home::{
     home::Home,
-    smart_device::{Device, Socket, ReportState},
+    smart_device::{Device, ReportState, Socket},
 };
 
 #[derive(Debug)]
@@ -32,12 +32,34 @@ impl Handler {
     pub fn respond(&mut self, r: &mut Request) -> String {
         let cmd = r.proceed();
         match cmd {
+            "switch" => self.switch(r),
             "set voltage" => self.set_voltage(r),
             "set current" => self.set_current(r),
             "get power" => self.get_power(r),
             "get report" => self.get_report(r),
             _ => String::from("Bad command"),
         }
+    }
+
+    fn switch(&mut self, r: &mut Request) -> String {
+        let room = r.proceed();
+        let device = r.proceed();
+        if let Ok(mut home) = self.0.write() {
+            if let Some(Device::Socket(s)) = home.get_device_by_path_mut(room, device) {
+                match r.proceed() {
+                    "on" => {
+                        s.switch(true);
+                        return format!("Socket {} is now on", device);
+                    },
+                    "off" => {
+                        s.switch(false);
+                        return format!("Socket {} is now off", device);
+                    }
+                    _ => return format!("Unacceptable action with socket {}", device),
+                }
+            }
+        }
+        format!("Syntax error in request: {:?}", r)
     }
 
     fn set_voltage(&mut self, r: &mut Request) -> String {
@@ -73,10 +95,7 @@ impl Handler {
         let device = r.proceed();
         if let Ok(home) = self.0.read() {
             if let Some(Device::Socket(s)) = home.get_device_by_path(room, device) {
-                if let Ok(c) = r.proceed().parse::<f64>() {
-                    let p = s.get_current_power();
-                    return format!("Power for socket {} is {}", device, p);
-                }
+                return format!("Power for socket {} is {}", device, s.get_current_power());
             }
         }
         format!("Syntax error in request: {:?}", r)

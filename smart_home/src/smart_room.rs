@@ -37,6 +37,10 @@ impl Room {
     pub fn get_device_by_name(&self, device_name: &str) -> Option<&Device> {
         self.devices.get(device_name)
     }
+
+    pub fn get_device_by_name_mut(&mut self, device_name: &str) -> Option<&mut Device> {
+        self.devices.get_mut(device_name)
+    }
 }
 
 impl Default for Room {

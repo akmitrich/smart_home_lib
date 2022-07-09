@@ -2,4 +2,6 @@
 members = [
     "smart_home",
     "stp",
+    "home_server",
+    "home_client",
 ]

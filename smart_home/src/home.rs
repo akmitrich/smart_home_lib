@@ -69,6 +69,16 @@ impl Home {
             .and_then(|room| room.get_device_by_name(device_name))
     }
 
+    pub fn get_device_by_path_mut(
+        &mut self,
+        room_name: &str,
+        device_name: &str,
+    ) -> Option<&mut Device> {
+        self.rooms
+            .get_mut(room_name)
+            .and_then(|room| room.get_device_by_name_mut(device_name))
+    }
+
     pub fn report(&self) -> String {
         let mut lines = vec![format!("General report about {}:", self.name)];
         for room_name in self.room_names_list() {
@@ -79,6 +89,13 @@ impl Home {
             }
         }
         lines.join("\n")
+    }
+
+    pub fn restore() -> Self {
+        let mut h = Self::new("For home_server");
+        h.add_room("R");
+        h.add_device("R", "S", Device::new_socket());
+        h
     }
 }
 

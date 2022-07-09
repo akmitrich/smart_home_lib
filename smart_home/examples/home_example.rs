@@ -1,5 +1,5 @@
-use smart_home::smart_device;
 use smart_home::home;
+use smart_home::smart_device;
 fn main() {
     average_temperature_in_room();
     report_example()

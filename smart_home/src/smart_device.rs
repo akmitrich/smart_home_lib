@@ -66,8 +66,16 @@ impl Socket {
         }
     }
 
+    pub fn get_voltage(&self) -> f64 {
+        self.voltage
+    }
+
     pub fn set_voltage(&mut self, voltage: f64) {
         self.voltage = voltage;
+    }
+
+    pub fn get_current(&self) -> f64 {
+        self.current
     }
 
     pub fn set_current(&mut self, current: f64) {

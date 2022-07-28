@@ -1,6 +1,9 @@
 use std::net::ToSocketAddrs;
 
-use stp::{client::{StpClient, RequestResult}, error::ConnectResult};
+use stp::{
+    client::{RequestResult, StpClient},
+    error::ConnectResult,
+};
 
 pub struct HomeClient(StpClient);
 
@@ -14,7 +17,7 @@ impl HomeClient {
     }
 
     pub fn switch(&mut self, room_name: &str, device_name: &str, on: bool) -> RequestResult {
-        let on_off = if on {"on"} else {"off"};
+        let on_off = if on { "on" } else { "off" };
         let r = format!("switch///{}///{}///{}", room_name, device_name, on_off);
         self.0.send_request(r)
     }

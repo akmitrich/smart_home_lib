@@ -50,7 +50,7 @@ impl Handler {
                     "on" => {
                         s.switch(true);
                         return format!("Socket {} is now on", device);
-                    },
+                    }
                     "off" => {
                         s.switch(false);
                         return format!("Socket {} is now off", device);

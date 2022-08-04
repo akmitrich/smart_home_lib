@@ -2,9 +2,9 @@
 
 use std::{
     str::Split,
-    sync::{Arc, RwLock},
+    sync::Arc,
 };
-
+use tokio::sync::RwLock;
 use smart_home::{
     home::Home,
     smart_device::{Device, ReportState, Socket},
@@ -12,6 +12,7 @@ use smart_home::{
 
 #[derive(Debug)]
 pub struct Request<'a>(Split<'a, &'a str>);
+
 pub struct Handler(Arc<RwLock<Home>>);
 
 impl<'a> Request<'a> {

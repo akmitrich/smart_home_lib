@@ -95,6 +95,7 @@ impl Home {
         let mut h = Self::new("For home_server");
         h.add_room("R");
         h.add_device("R", "S", Device::new_socket());
+        h.add_device("R", "T", Device::new_thermometer());
         h
     }
 }

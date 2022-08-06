@@ -6,6 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "0.2", features = ["full"] }
+tokio = { version = "1.15", features = ["full"] }
 stp = {path = "../stp"}
 smart_home = {path = "../smart_home"}

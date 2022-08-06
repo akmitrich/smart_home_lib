@@ -21,8 +21,8 @@ pub struct Thermometer {
     temperature: f64,
 }
 
-pub trait ReportState {
-    fn report_state(&self) -> String;
+pub trait DeviceInfo {
+    fn device_info(&self) -> Vec<String>;
 }
 
 impl Device {
@@ -35,12 +35,12 @@ impl Device {
     }
 }
 
-impl ReportState for Device {
-    fn report_state(&self) -> String {
+impl DeviceInfo for Device {
+    fn device_info(&self) -> Vec<String> {
         match self {
-            Device::Socket(s) => format!("Socket {}", s.report_state()),
-            Device::Thermometer(t) => format!("Thermometer, {}", t.report_state()),
-            _ => String::from("Unknown device."),
+            Device::Socket(s) => s.device_info(),
+            Device::Thermometer(t) => t.device_info(),
+            _ => vec![String::from("Unknown device.")],
         }
     }
 }
@@ -95,13 +95,14 @@ impl Socket {
     }
 }
 
-impl ReportState for Socket {
-    fn report_state(&self) -> String {
-        format!(
-            "is {}; current power is {}",
-            if self.is_on() { "on" } else { "off" },
-            self.get_current_power()
-        )
+impl DeviceInfo for Socket {
+    fn device_info(&self) -> Vec<String> {
+        let mut result = vec![];
+        result.push("socket".into());
+        result.push((if self.on {"on"} else {"off"}).into());
+        result.push(format!("{}", self.current));
+        result.push(format!("{}", self.voltage));
+        result
     }
 }
 
@@ -120,9 +121,12 @@ impl Thermometer {
     }
 }
 
-impl ReportState for Thermometer {
-    fn report_state(&self) -> String {
-        format!(" temperature is {}", self.get_temperature())
+impl DeviceInfo for Thermometer {
+    fn device_info(&self) -> Vec<String> {
+        let mut result = vec![];
+        result.push("thermometer".into());
+        result.push(format!("{}", self.temperature));
+        result
     }
 }
 

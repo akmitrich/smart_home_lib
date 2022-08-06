@@ -7,11 +7,11 @@ pub struct StpClient {
 }
 
 impl StpClient {
-    pub async fn connect<Addrs>(addrs: Addrs) -> ConnectResult<Self>
+    pub async fn connect<Addrs>(addr: Addrs) -> ConnectResult<Self>
     where
         Addrs: ToSocketAddrs,
     {
-        let stream = TcpStream::connect(addrs).await?;
+        let stream = TcpStream::connect(addr).await?;
         Self::try_handshake(stream).await
     }
 

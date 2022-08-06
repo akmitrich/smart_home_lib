@@ -39,7 +39,7 @@ fn work_with(
 }
 
 async fn handle_connection(
-    mut conn: StpConnection,
+    conn: StpConnection,
     home: Arc<RwLock<Home>>,
 ) -> Result<(), Box<dyn Error>> {
     let mut handler = Handler::new(home);

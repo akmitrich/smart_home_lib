@@ -21,7 +21,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let conn = server.accept().await?;
         tokio::spawn(process_connection(conn));
     }
-    Ok(())
 }
 
 async fn process_connection(conn: StpConnection) -> Result<(), ProcessError> {

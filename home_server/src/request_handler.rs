@@ -36,7 +36,7 @@ impl Handler {
             "room list" => self.room_list(r).await,
             "device list" => self.device_list(r).await,
             "get device" => self.get_device(r).await,
-            "set device" => "self.set_device(r)".into(),
+            "update device" => self.update_device(r).await,
             _ => String::from("Bad command"),
         }
     }
@@ -82,5 +82,41 @@ impl Handler {
             },
         }
         result.join("///")
+    }
+
+    async fn update_device(&self, r: &mut Request<'_>) -> String {
+        let mut home = self.0.write().await;
+        let room_name = r.proceed();
+        let device_name = r.proceed();
+        let mut result = vec![];
+        if let Some(device) = home.get_device_by_path_mut(room_name, device_name) {
+            result.push("Ok".into());
+            update_from_stp_request(device, r);
+        } else {
+            result.push("Err".into());
+            result.push(format!("Device '{device_name}' not found in room '{room_name}'."));
+        }
+        result.join("///")
+    }
+}
+
+fn update_from_stp_request(device: &mut Device, req: &mut Request) {
+    match device {
+        Device::Socket(socket) if req.proceed() == "socket" => {
+            let on = "on" == req.proceed();
+            if let Ok(current) = req.proceed().parse::<f64>() {
+                if let Ok(voltage) = req.proceed().parse::<f64>() {
+                    socket.switch(on);
+                    socket.set_current(current);
+                    socket.set_voltage(voltage);
+                }
+            }
+        }
+        Device::Thermometer(thermometer) if req.proceed() == "thermometer" => {
+            if let Ok(temperature) = req.proceed().parse::<f64>() {
+                thermometer.set_temperature(temperature);
+            }
+        },
+        _ => todo!(),
     }
 }

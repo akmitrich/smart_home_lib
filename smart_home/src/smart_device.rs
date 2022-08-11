@@ -35,30 +35,6 @@ impl Device {
         Device::Thermometer(Thermometer::new(20_f64))
     }
 
-    pub fn from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -> Self {
-        let device = response.next().unwrap_or_default();
-        match device {
-            "socket" => {
-                let on_off = response.next().unwrap_or("off");
-                let on = on_off == "on";
-                let current: f64 = response.next().unwrap_or_default().parse().unwrap_or_default();
-                if let Ok(voltage) = response.next().unwrap_or_default().parse::<f64>() {
-                    Device::Socket(Socket::new(voltage, current, on))
-                } else {
-                    Device::Unknown
-                }
-            }
-            "thermometer" => {
-                if let Ok(temperature) = response.next().unwrap_or_default().parse::<f64>() {
-                    Device::Thermometer(Thermometer::new(temperature))
-                } else {
-                    Device::Unknown
-                }
-            }
-            _ => Self::Unknown,
-        }
-    }
-
     pub fn report(&self) -> String {
         String::from("Device...")
     }
@@ -141,12 +117,16 @@ impl Thermometer {
     }
 
     pub fn temperature(mut self, temperature: f64) -> Self {
-        self.temperature = temperature;
+        self.set_temperature(temperature);
         self
     }
 
     pub fn get_temperature(&self) -> f64 {
         self.temperature
+    }
+
+    pub fn set_temperature(&mut self, temperature: f64) {
+        self.temperature = temperature;
     }
 }
 

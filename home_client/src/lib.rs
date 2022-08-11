@@ -4,11 +4,11 @@ use std::vec;
 use tokio::net::ToSocketAddrs;
 
 use stp::{
-    client::StpClient,
+    client::{StpClient, RequestResult, RequestError},
     error::ConnectResult,
 };
 
-use smart_home::smart_device::Device;
+use smart_home::smart_device::{Device, Socket, Thermometer, DeviceInfo};
 
 pub struct HomeClient(StpClient);
 
@@ -55,9 +55,41 @@ impl HomeClient {
         let mut response = response.split("///");
         let code = response.next().unwrap_or_default();
         if code == "Ok" {
-            return Ok(Device::from_stp_response(&mut response));
+            return Ok(from_stp_response(&mut response));
         }
         Ok(Device::Unknown)
+    }
+
+    pub async fn update_device(&self, room_name: &str, device_name: &str, device: Device) -> RequestResult {
+        let info = device.device_info().join("///");
+        let response = self.0.send_request(format!("update device///{room_name}///{device_name}///{info}")).await?;
+        println!("From server: {response}");
+        Ok("Ok".into())
+    }
+
+}
+
+fn from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -> Device {
+    let device = response.next().unwrap_or_default();
+    match device {
+        "socket" => {
+            let on_off = response.next().unwrap_or("off");
+            let on = on_off == "on";
+            let current: f64 = response.next().unwrap_or_default().parse().unwrap_or_default();
+            if let Ok(voltage) = response.next().unwrap_or_default().parse::<f64>() {
+                Device::Socket(Socket::new(voltage, current, on))
+            } else {
+                Device::Unknown
+            }
+        }
+        "thermometer" => {
+            if let Ok(temperature) = response.next().unwrap_or_default().parse::<f64>() {
+                Device::Thermometer(Thermometer::new(temperature))
+            } else {
+                Device::Unknown
+            }
+        }
+        _ => Device::Unknown,
     }
 }
 

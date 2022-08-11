@@ -13,7 +13,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let server = StpServer::bind(addr).await?;
     loop {
         let connection = server.accept().await?;
-        work_with(connection, home.clone())?;
+        work_with(connection, Arc::clone(&home))?;
     }
 }
 

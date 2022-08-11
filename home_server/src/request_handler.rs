@@ -30,14 +30,57 @@ impl Handler {
         Self(h)
     }
 
-    pub fn respond(&mut self, r: &mut Request) -> String {
+    pub async fn respond<'a>(&'a mut self, r: &'a mut Request<'_>) -> String {
         let cmd = r.proceed();
         match cmd {
-            "room list" => "self.room_list(r)".into(),
-            "device_list" => "self.device_list(r)".into(),
-            "get device" => "self.get_device(r)".into(),
+            "room list" => self.room_list(r).await,
+            "device list" => self.device_list(r).await,
+            "get device" => self.get_device(r).await,
             "set device" => "self.set_device(r)".into(),
             _ => String::from("Bad command"),
         }
+    }
+
+    async fn room_list(&self, r: &mut Request<'_>) -> String {
+        let mut result = vec![String::from("Ok")];
+        let home = self.0.read().await;
+        for room in home.room_names_list() {
+            result.push(room.clone());
+        }
+        result.join("///")
+    }
+
+    async fn device_list(&self, r: &mut Request<'_>) -> String {
+        let mut result = vec![];
+        let home = self.0.read().await;
+        let room_name = r.proceed();
+        if let Some(room) = home.get_room_by_name(room_name) {
+            result.push("Ok".into());
+            for d in room.device_names_list() {
+                result.push(d.clone());
+            }
+        } else {
+            result.push("Err".into());
+            result.push(format!("Room '{room_name}' not found."));
+        }
+        result.join("///")
+    }
+
+    async fn get_device(&self, r: &mut Request<'_>) -> String {
+        let mut result = vec![];
+        let home = self.0.read().await;
+        let room = r.proceed();
+        let device = r.proceed();
+        match home.get_device_by_path(room, device) {
+            Some(device) => {
+                result.push("Ok".into());
+                result.append(&mut device.device_info());
+            },
+            None => {
+                result.push("Err".into());
+                result.push(format!("Device '{}' not found in room '{}'", device, room));
+            },
+        }
+        result.join("///")
     }
 }

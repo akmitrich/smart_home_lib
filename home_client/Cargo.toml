@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.15", features = ["full"] }
 stp = {path = "../stp"}
+smart_home = {path = "../smart_home"}

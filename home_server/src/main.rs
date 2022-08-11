@@ -4,10 +4,7 @@ use tokio::sync::RwLock;
 mod request_handler;
 use request_handler::{Handler, Request};
 use smart_home::home::Home;
-use stp::{
-    error::ConnectError,
-    server::{StpConnection, StpServer},
-};
+use stp::server::{StpConnection, StpServer};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -20,10 +17,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn work_with(
-    connection: StpConnection,
-    home_ptr: Arc<RwLock<Home>>,
-) -> Result<(), Box<dyn Error>> {
+fn work_with(connection: StpConnection, home: Arc<RwLock<Home>>) -> Result<(), Box<dyn Error>> {
     let addr = match connection.peer_addr() {
         Ok(addr) => addr.to_string(),
         Err(_) => String::from("Unknown addr"),
@@ -31,21 +25,18 @@ fn work_with(
     println!("connection from: {}", addr);
 
     tokio::spawn(async move {
-        if handle_connection(connection, home_ptr).await.is_err() {
+        if handle_connection(connection, home).await.is_err() {
             eprintln!("Client disconnected: {}", addr);
         }
     });
     Ok(())
 }
 
-async fn handle_connection(
-    conn: StpConnection,
-    home: Arc<RwLock<Home>>,
-) -> Result<(), Box<dyn Error>> {
+async fn handle_connection(connection: StpConnection, home: Arc<RwLock<Home>>) -> Result<(), Box<dyn Error>> {
     let mut handler = Handler::new(home);
     loop {
-        let req_str = conn.recv_request().await?;
+        let req_str = connection.recv_request().await?;
         let mut req = Request::new(&req_str);
-        conn.send_response(handler.respond(&mut req)).await?;
+        connection.send_response(handler.respond(&mut req).await).await?;
     }
 }

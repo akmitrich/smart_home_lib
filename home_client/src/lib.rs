@@ -1,10 +1,14 @@
 #![allow(unused, dead_code)]
+use std::vec;
+
 use tokio::net::ToSocketAddrs;
 
 use stp::{
     client::StpClient,
     error::ConnectResult,
 };
+
+use smart_home::smart_device::Device;
 
 pub struct HomeClient(StpClient);
 
@@ -17,8 +21,43 @@ impl HomeClient {
         Ok(Self(stp_client))
     }
 
-    pub async fn get_socket(&self, room_name: &str, device_name: &str) {
-        self.0.send_request("Hello server!").await.unwrap();
+    pub async fn get_room_list(&self) -> Vec<String> {
+        let mut result = vec![];
+        let response = self.0.send_request("room list").await.unwrap_or_default();
+        let mut response = response.split("///");
+        if let Some(code) = response.next() {
+            if code == "Ok" {
+                for room in response {
+                    result.push(String::from(room));
+                }
+            }
+        }
+        result
+    }
+
+    pub async fn get_device_list(&self, room_name: &str) -> Vec<String> {
+        let mut result = vec![];
+        let response = self.0.send_request(format!("device list///{room_name}")).await.unwrap_or_default();
+        let mut response = response.split("///");
+        if let Some(code) = response.next() {
+            if code == "Ok" {
+                for device in response {
+                    result.push(String::from(device));
+                }
+            }
+        }
+        result
+    }
+
+    pub async fn get_device(&self, room_name: &str, device_name: &str) -> Result<Device, Box<dyn std::error::Error>> {
+        let response = self.0.send_request(format!("get device///{room_name}///{device_name}")).await?;
+        println!("From server: {response}");
+        let mut response = response.split("///");
+        let code = response.next().unwrap_or_default();
+        if code == "Ok" {
+            return Ok(Device::from_stp_response(&mut response));
+        }
+        Ok(Device::Unknown)
     }
 }
 

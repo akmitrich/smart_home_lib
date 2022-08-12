@@ -1,14 +1,11 @@
 #![allow(unused, dead_code)]
 
-use std::{
-    str::Split,
-    sync::Arc,
-};
-use tokio::sync::RwLock;
 use smart_home::{
     home::Home,
     smart_device::{Device, DeviceInfo, Socket},
 };
+use std::{str::Split, sync::Arc};
+use tokio::sync::RwLock;
 
 #[derive(Debug)]
 pub struct Request<'a>(Split<'a, &'a str>);
@@ -75,11 +72,11 @@ impl Handler {
             Some(device) => {
                 result.push("Ok".into());
                 result.append(&mut device.device_info());
-            },
+            }
             None => {
                 result.push("Err".into());
                 result.push(format!("Device '{}' not found in room '{}'", device, room));
-            },
+            }
         }
         result.join("///")
     }
@@ -94,7 +91,9 @@ impl Handler {
             update_from_stp_request(device, r);
         } else {
             result.push("Err".into());
-            result.push(format!("Device '{device_name}' not found in room '{room_name}'."));
+            result.push(format!(
+                "Device '{device_name}' not found in room '{room_name}'."
+            ));
         }
         result.join("///")
     }
@@ -116,7 +115,7 @@ fn update_from_stp_request(device: &mut Device, req: &mut Request) {
             if let Ok(temperature) = req.proceed().parse::<f64>() {
                 thermometer.set_temperature(temperature);
             }
-        },
+        }
         _ => todo!(),
     }
 }

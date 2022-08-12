@@ -32,11 +32,16 @@ fn work_with(connection: StpConnection, home: Arc<RwLock<Home>>) -> Result<(), B
     Ok(())
 }
 
-async fn handle_connection(connection: StpConnection, home: Arc<RwLock<Home>>) -> Result<(), Box<dyn Error>> {
+async fn handle_connection(
+    connection: StpConnection,
+    home: Arc<RwLock<Home>>,
+) -> Result<(), Box<dyn Error>> {
     let mut handler = Handler::new(home);
     loop {
         let req_str = connection.recv_request().await?;
         let mut req = Request::new(&req_str);
-        connection.send_response(handler.respond(&mut req).await).await?;
+        connection
+            .send_response(handler.respond(&mut req).await)
+            .await?;
     }
 }

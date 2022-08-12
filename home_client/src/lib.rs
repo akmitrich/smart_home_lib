@@ -4,11 +4,11 @@ use std::vec;
 use tokio::net::ToSocketAddrs;
 
 use stp::{
-    client::{StpClient, RequestResult, RequestError},
+    client::{RequestError, RequestResult, StpClient},
     error::ConnectResult,
 };
 
-use smart_home::smart_device::{Device, Socket, Thermometer, DeviceInfo};
+use smart_home::smart_device::{Device, DeviceInfo, Socket, Thermometer};
 
 pub struct HomeClient(StpClient);
 
@@ -22,60 +22,68 @@ impl HomeClient {
     }
 
     pub async fn get_room_list(&self) -> Vec<String> {
-        let mut result = vec![];
         let response = self.0.send_request("room list").await.unwrap_or_default();
         let mut response = response.split("///");
-        if let Some(code) = response.next() {
-            if code == "Ok" {
-                for room in response {
-                    result.push(String::from(room));
-                }
-            }
-        }
-        result
+        list_from_stp_response(&mut response)
     }
 
     pub async fn get_device_list(&self, room_name: &str) -> Vec<String> {
-        let mut result = vec![];
-        let response = self.0.send_request(format!("device list///{room_name}")).await.unwrap_or_default();
+        let response = self
+            .0
+            .send_request(format!("device list///{room_name}"))
+            .await
+            .unwrap_or_default();
         let mut response = response.split("///");
-        if let Some(code) = response.next() {
-            if code == "Ok" {
-                for device in response {
-                    result.push(String::from(device));
-                }
-            }
-        }
-        result
+        list_from_stp_response(&mut response)
     }
 
-    pub async fn get_device(&self, room_name: &str, device_name: &str) -> Result<Device, Box<dyn std::error::Error>> {
-        let response = self.0.send_request(format!("get device///{room_name}///{device_name}")).await?;
+    pub async fn get_device(
+        &self,
+        room_name: &str,
+        device_name: &str,
+    ) -> Result<Device, Box<dyn std::error::Error>> {
+        let response = self
+            .0
+            .send_request(format!("get device///{room_name}///{device_name}"))
+            .await?;
         println!("From server: {response}");
         let mut response = response.split("///");
         let code = response.next().unwrap_or_default();
         if code == "Ok" {
-            return Ok(from_stp_response(&mut response));
+            return Ok(device_from_stp_response(&mut response));
         }
         Ok(Device::Unknown)
     }
 
-    pub async fn update_device(&self, room_name: &str, device_name: &str, device: Device) -> RequestResult {
+    pub async fn update_device(
+        &self,
+        room_name: &str,
+        device_name: &str,
+        device: Device,
+    ) -> RequestResult {
         let info = device.device_info().join("///");
-        let response = self.0.send_request(format!("update device///{room_name}///{device_name}///{info}")).await?;
+        let response = self
+            .0
+            .send_request(format!(
+                "update device///{room_name}///{device_name}///{info}"
+            ))
+            .await?;
         println!("From server: {response}");
         Ok("Ok".into())
     }
-
 }
 
-fn from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -> Device {
+fn device_from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -> Device {
     let device = response.next().unwrap_or_default();
     match device {
         "socket" => {
             let on_off = response.next().unwrap_or("off");
             let on = on_off == "on";
-            let current: f64 = response.next().unwrap_or_default().parse().unwrap_or_default();
+            let current: f64 = response
+                .next()
+                .unwrap_or_default()
+                .parse()
+                .unwrap_or_default();
             if let Ok(voltage) = response.next().unwrap_or_default().parse::<f64>() {
                 Device::Socket(Socket::new(voltage, current, on))
             } else {
@@ -91,6 +99,18 @@ fn from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -> Dev
         }
         _ => Device::Unknown,
     }
+}
+
+fn list_from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -> Vec<String> {
+    let mut result = vec![];
+    if let Some(code) = response.next() {
+        if code == "Ok" {
+            for item in response {
+                result.push(String::from(item));
+            }
+        }
+    }
+    result
 }
 
 // #[cfg(test)]

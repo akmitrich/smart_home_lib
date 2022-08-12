@@ -104,7 +104,7 @@ impl DeviceInfo for Socket {
     fn device_info(&self) -> Vec<String> {
         let mut result = vec![];
         result.push("socket".into());
-        result.push((if self.on {"on"} else {"off"}).into());
+        result.push((if self.on { "on" } else { "off" }).into());
         result.push(format!("{}", self.current));
         result.push(format!("{}", self.voltage));
         result

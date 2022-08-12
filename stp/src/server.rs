@@ -1,8 +1,8 @@
+use crate::error::{ConnectError, ConnectResult, RecvResult, SendResult};
 use std::io;
 use std::net::SocketAddr;
-use crate::error::{ConnectError, ConnectResult, RecvResult, SendResult};
-use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 use thiserror::Error;
+use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 
 pub struct StpServer {
     tcp: TcpListener,

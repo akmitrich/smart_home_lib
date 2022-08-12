@@ -1,6 +1,6 @@
+use crate::error::{RecvError, RecvResult, SendResult};
 use std::io;
 use tokio::net::TcpStream;
-use crate::error::{RecvError, RecvResult, SendResult};
 
 pub mod client;
 pub mod error;

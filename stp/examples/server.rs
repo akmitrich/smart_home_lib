@@ -1,18 +1,15 @@
 use stp::server::{StpConnection, StpServer};
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 enum ProcessError {
-    WhenRecv(stp::error::RecvError),
-    WhenSend(stp::error::SendError),
+    #[error("Error while receiving request: {0}.")]
+    WhenRecv(#[from] stp::error::RecvError),
+    #[error("Error while sending response: {0}")]
+    WhenSend(#[from] stp::error::SendError),
 }
 
-impl std::fmt::Display for ProcessError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "error while interact with client.")
-    }
-}
-
-impl std::error::Error for ProcessError {}
+type ProcessResult = Result<(), ProcessError>;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -23,9 +20,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-async fn process_connection(conn: StpConnection) -> Result<(), ProcessError> {
-    let req = conn.recv_request().await.map_err(|e| ProcessError::WhenRecv(e))?;
+async fn process_connection(conn: StpConnection) -> ProcessResult {
+    let req = conn.recv_request().await?;
     assert_eq!(req, "Hello, server");
-    conn.send_response("Hello, client").await.map_err(|e| ProcessError::WhenSend(e))?;
+    conn.send_response("Hello, client").await?;
     Ok(())
 }

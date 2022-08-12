@@ -1,6 +1,6 @@
 use crate::error::{ConnectError, ConnectResult, RecvError, SendError};
-use tokio::net::{TcpStream, ToSocketAddrs};
 use thiserror::Error;
+use tokio::net::{TcpStream, ToSocketAddrs};
 
 pub struct StpClient {
     stream: TcpStream,

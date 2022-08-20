@@ -10,6 +10,10 @@ use stp::{
 
 use smart_home::smart_device::{Device, DeviceInfo, Socket, Thermometer};
 
+const OK_RESPONSE: &str = "Ok";
+const ERR_RESPONSE: &str = "Err";
+const SEPARATOR: &str = "///";
+
 pub struct HomeClient(StpClient);
 
 impl HomeClient {
@@ -23,17 +27,17 @@ impl HomeClient {
 
     pub async fn get_room_list(&self) -> Vec<String> {
         let response = self.0.send_request("room list").await.unwrap_or_default();
-        let mut response = response.split("///");
+        let mut response = response.split(SEPARATOR);
         list_from_stp_response(&mut response)
     }
 
     pub async fn get_device_list(&self, room_name: &str) -> Vec<String> {
         let response = self
             .0
-            .send_request(format!("device list///{room_name}"))
+            .send_request(format!("device list{SEPARATOR}{room_name}"))
             .await
             .unwrap_or_default();
-        let mut response = response.split("///");
+        let mut response = response.split(SEPARATOR);
         list_from_stp_response(&mut response)
     }
 
@@ -44,12 +48,14 @@ impl HomeClient {
     ) -> Result<Device, Box<dyn std::error::Error>> {
         let response = self
             .0
-            .send_request(format!("get device///{room_name}///{device_name}"))
+            .send_request(format!(
+                "get device{SEPARATOR}{room_name}{SEPARATOR}{device_name}"
+            ))
             .await?;
         println!("From server: {response}");
-        let mut response = response.split("///");
+        let mut response = response.split({ SEPARATOR });
         let code = response.next().unwrap_or_default();
-        if code == "Ok" {
+        if code == OK_RESPONSE {
             return Ok(device_from_stp_response(&mut response));
         }
         Ok(Device::Unknown)
@@ -61,15 +67,15 @@ impl HomeClient {
         device_name: &str,
         device: Device,
     ) -> RequestResult {
-        let info = device.device_info().join("///");
+        let info = device.device_info().join(SEPARATOR);
         let response = self
             .0
             .send_request(format!(
-                "update device///{room_name}///{device_name}///{info}"
+                "update device{SEPARATOR}{room_name}{SEPARATOR}{device_name}{SEPARATOR}{info}"
             ))
             .await?;
         println!("From server: {response}");
-        Ok("Ok".into())
+        Ok(OK_RESPONSE.into())
     }
 }
 
@@ -104,7 +110,7 @@ fn device_from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>)
 fn list_from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -> Vec<String> {
     let mut result = vec![];
     if let Some(code) = response.next() {
-        if code == "Ok" {
+        if code == OK_RESPONSE {
             for item in response {
                 result.push(String::from(item));
             }
@@ -113,56 +119,91 @@ fn list_from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -
     result
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn it_works() {
-//         let mut c = HomeClient::new("127.0.0.1:4083").unwrap();
-//         let response = c.set_current("No room", "No device", 0.).unwrap();
-//         assert!(response.starts_with("Syntax error"));
-//     }
+    #[tokio::test]
+    async fn it_works() {
+        let mut c = HomeClient::new("127.0.0.1:4083").await.unwrap();
+        let response = c.get_device("No room", "No device").await.unwrap();
+        assert_eq!(response, Device::Unknown);
+    }
 
-//     #[test]
-//     fn on_off() {
-//         let mut c = HomeClient::new("127.0.0.1:4083").unwrap();
-//         let response = c.switch("R", "S", true).unwrap();
-//         assert_eq!("Socket S is now on", response);
-//         let response = c.switch("R", "S", false).unwrap();
-//         assert_eq!("Socket S is now off", response);
-//     }
+    #[tokio::test]
+    async fn on_off() {
+        let mut c = HomeClient::new("127.0.0.1:4083").await.unwrap();
+        let mut response = c.get_device("R", "S").await.unwrap();
+        if let Device::Socket(mut socket) = response {
+            socket.switch(true);
+            let result = c.update_device("R", "S", Device::Socket(socket)).await;
+            assert_eq!(OK_RESPONSE, result.unwrap());
+            let response = c.get_device("R", "S").await.unwrap();
+            if let Device::Socket(socket) = response {
+                assert!(socket.is_on());
+            } else {
+                panic!("Unexpected device after update.")
+            }
+        } else {
+            panic!("Unexpected device comes from server.")
+        }
+    }
 
-//     #[test]
-//     fn set_voltage() {
-//         let mut c = HomeClient::new("127.0.0.1:4083").unwrap();
-//         let response = c.set_voltage("R", "S", 44.).unwrap();
-//         assert_eq!("Set voltage 44 for socket S", response);
-//     }
+    #[tokio::test]
+    async fn set_voltage() {
+        let mut c = HomeClient::new("127.0.0.1:4083").await.unwrap();
+        let mut response = c.get_device("R", "S").await.unwrap();
+        if let Device::Socket(mut socket) = response {
+            socket.set_voltage(215.);
+            let result = c.update_device("R", "S", Device::Socket(socket)).await;
+            assert_eq!(OK_RESPONSE, result.unwrap());
+            let response = c.get_device("R", "S").await.unwrap();
+            if let Device::Socket(socket) = response {
+                assert_eq!(215., socket.get_voltage());
+            } else {
+                panic!("Unexpected device after update.")
+            }
+        } else {
+            panic!("Unexpected device comes from server.")
+        }
+    }
 
-//     #[test]
-//     fn set_current() {
-//         let mut c = HomeClient::new("127.0.0.1:4083").unwrap();
-//         let response = c.set_current("R", "S", 1.).unwrap();
-//         assert_eq!("Set current 1 for socket S", response);
-//     }
+    #[tokio::test]
+    async fn set_current() {
+        let mut c = HomeClient::new("127.0.0.1:4083").await.unwrap();
+        let mut response = c.get_device("R", "S").await.unwrap();
+        if let Device::Socket(mut socket) = response {
+            socket.set_current(5.);
+            let result = c.update_device("R", "S", Device::Socket(socket)).await;
+            assert_eq!(OK_RESPONSE, result.unwrap());
+            let response = c.get_device("R", "S").await.unwrap();
+            if let Device::Socket(socket) = response {
+                assert_eq!(5., socket.get_current());
+            } else {
+                panic!("Unexpected device after update.")
+            }
+        } else {
+            panic!("Unexpected device comes from server.")
+        }
+    }
 
-//     #[test]
-//     fn get_power() {
-//         let mut c = HomeClient::new("127.0.0.1:4083").unwrap();
-//         c.set_voltage("R", "S", 44.).unwrap();
-//         c.set_current("R", "S", 1.).unwrap();
-//         let response = c.get_power("R", "S").unwrap();
-//         assert_eq!("Power for socket S is 44", response);
-//     }
-
-//     #[test]
-//     fn get_report() {
-//         let mut c = HomeClient::new("127.0.0.1:4083").unwrap();
-//         c.set_voltage("R", "S", 44.).unwrap();
-//         c.set_current("R", "S", 1.).unwrap();
-//         c.switch("R", "S", true).unwrap();
-//         let response = c.get_report("R", "S").unwrap();
-//         assert_eq!("is on; current power is 44", response);
-//     }
-// }
+    #[tokio::test]
+    async fn get_power() {
+        let mut c = HomeClient::new("127.0.0.1:4083").await.unwrap();
+        let mut response = c.get_device("R", "S").await.unwrap();
+        if let Device::Socket(mut socket) = response {
+            socket.set_current(5.);
+            socket.set_voltage(200.);
+            let result = c.update_device("R", "S", Device::Socket(socket)).await;
+            assert_eq!(OK_RESPONSE, result.unwrap());
+            let response = c.get_device("R", "S").await.unwrap();
+            if let Device::Socket(socket) = response {
+                assert_eq!(1000., socket.get_current_power());
+            } else {
+                panic!("Unexpected device after update.")
+            }
+        } else {
+            panic!("Unexpected device comes from server.")
+        }
+    }
+}

@@ -31,6 +31,7 @@ impl HomeClient {
         list_from_stp_response(&mut response)
     }
 
+    /// TODO: must return Result<Vec<String>, 'Error'>
     pub async fn get_device_list(&self, room_name: &str) -> Vec<String> {
         let response = self
             .0
@@ -41,6 +42,7 @@ impl HomeClient {
         list_from_stp_response(&mut response)
     }
 
+    /// TODO: define new Error for Result
     pub async fn get_device(
         &self,
         room_name: &str,
@@ -52,7 +54,6 @@ impl HomeClient {
                 "get device{SEPARATOR}{room_name}{SEPARATOR}{device_name}"
             ))
             .await?;
-        println!("From server: {response}");
         let mut response = response.split({ SEPARATOR });
         let code = response.next().unwrap_or_default();
         if code == OK_RESPONSE {

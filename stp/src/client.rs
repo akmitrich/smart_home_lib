@@ -26,7 +26,6 @@ impl StpClient {
         Ok(Self { stream: s })
     }
 
-    /// Send request to connected STP server.
     pub async fn send_request<R: AsRef<str>>(&self, req: R) -> RequestResult {
         super::send_string(req, &self.stream).await?;
         let response = super::recv_string(&self.stream).await?;

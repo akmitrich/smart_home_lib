@@ -8,8 +8,8 @@ async fn main() {
     c.update_device("R", "S", Device::Socket(Socket::new(220., 5.5, true)))
         .await
         .unwrap();
-    for room in c.get_room_list().await.iter() {
-        for device in c.get_device_list(room).await.iter() {
+    for room in c.get_room_list().await.unwrap_or_default().iter() {
+        for device in c.get_device_list(room).await.unwrap_or_default().iter() {
             let device = c.get_device(room, device).await.unwrap();
             println!("In room '{room}' we have {:?}", device);
         }

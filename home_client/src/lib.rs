@@ -1,14 +1,13 @@
 #![allow(unused, dead_code)]
-use std::vec;
-
-use tokio::net::ToSocketAddrs;
-
+use error::{HomeError, HomeResult};
+use smart_home::smart_device::{Device, DeviceInfo, Socket, Thermometer};
+use std::{fmt::Write, vec};
 use stp::{
     client::{RequestError, RequestResult, StpClient},
     error::ConnectResult,
 };
-
-use smart_home::smart_device::{Device, DeviceInfo, Socket, Thermometer};
+use tokio::net::ToSocketAddrs;
+pub mod error;
 
 const OK_RESPONSE: &str = "Ok";
 const ERR_RESPONSE: &str = "Err";
@@ -25,29 +24,22 @@ impl HomeClient {
         Ok(Self(stp_client))
     }
 
-    pub async fn get_room_list(&self) -> Vec<String> {
-        let response = self.0.send_request("room list").await.unwrap_or_default();
+    pub async fn get_room_list(&self) -> HomeResult<Vec<String>> {
+        let response = self.0.send_request("room list").await?;
         let mut response = response.split(SEPARATOR);
         list_from_stp_response(&mut response)
     }
 
-    /// TODO: must return Result<Vec<String>, 'Error'>
-    pub async fn get_device_list(&self, room_name: &str) -> Vec<String> {
+    pub async fn get_device_list(&self, room_name: &str) -> HomeResult<Vec<String>> {
         let response = self
             .0
             .send_request(format!("device list{SEPARATOR}{room_name}"))
-            .await
-            .unwrap_or_default();
+            .await?;
         let mut response = response.split(SEPARATOR);
         list_from_stp_response(&mut response)
     }
 
-    /// TODO: define new Error for Result
-    pub async fn get_device(
-        &self,
-        room_name: &str,
-        device_name: &str,
-    ) -> Result<Device, Box<dyn std::error::Error>> {
+    pub async fn get_device(&self, room_name: &str, device_name: &str) -> HomeResult<Device> {
         let response = self
             .0
             .send_request(format!(
@@ -55,11 +47,7 @@ impl HomeClient {
             ))
             .await?;
         let mut response = response.split({ SEPARATOR });
-        let code = response.next().unwrap_or_default();
-        if code == OK_RESPONSE {
-            return Ok(device_from_stp_response(&mut response));
-        }
-        Ok(Device::Unknown)
+        device_from_stp_response(&mut response)
     }
 
     pub async fn update_device(
@@ -75,12 +63,27 @@ impl HomeClient {
                 "update device{SEPARATOR}{room_name}{SEPARATOR}{device_name}{SEPARATOR}{info}"
             ))
             .await?;
-        println!("From server: {response}");
         Ok(OK_RESPONSE.into())
     }
 }
 
-fn device_from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -> Device {
+fn device_from_stp_response<'a>(
+    response: &'a mut impl Iterator<Item = &'a str>,
+) -> HomeResult<Device> {
+    match response.next() {
+        Some(s) if s == OK_RESPONSE => Ok(device_from_ok_response(response)),
+        Some(s) if s == ERR_RESPONSE => {
+            let mut error_msg = String::new();
+            for item in response {
+                write!(error_msg, "{} ", item);
+            }
+            Err(HomeError::ResponseErr(error_msg.trim_end().into()))
+        }
+        Some(_) | None => Err(HomeError::BadResponse),
+    }
+}
+
+fn device_from_ok_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -> Device {
     let device = response.next().unwrap_or_default();
     match device {
         "socket" => {
@@ -108,16 +111,26 @@ fn device_from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>)
     }
 }
 
-fn list_from_stp_response<'a>(response: &'a mut impl Iterator<Item = &'a str>) -> Vec<String> {
+fn list_from_stp_response<'a>(
+    response: &'a mut impl Iterator<Item = &'a str>,
+) -> HomeResult<Vec<String>> {
     let mut result = vec![];
-    if let Some(code) = response.next() {
-        if code == OK_RESPONSE {
+    match response.next() {
+        Some(s) if s == OK_RESPONSE => {
             for item in response {
                 result.push(String::from(item));
             }
+            Ok(result)
         }
+        Some(s) if s == ERR_RESPONSE => {
+            let mut error_msg = String::new();
+            for item in response {
+                write!(error_msg, "{} ", item);
+            }
+            Err(HomeError::ResponseErr(error_msg.trim_end().into()))
+        }
+        Some(_) | None => Err(HomeError::BadResponse),
     }
-    result
 }
 
 #[cfg(test)]

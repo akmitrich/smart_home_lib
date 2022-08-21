@@ -9,3 +9,4 @@ edition = "2021"
 tokio = { version = "1.15", features = ["full"] }
 stp = {path = "../stp"}
 smart_home = {path = "../smart_home"}
+thiserror = "1.0.30"
